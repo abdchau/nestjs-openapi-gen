@@ -17,7 +17,6 @@ def get_default_pipe_string(parameter):
 
 def parse_parameter(parameter: dict):
     in_dict = {'query': 'Query', 'path' : 'Param'}
-    # print(json.dumps(parameter, indent=2))
 
     param_name = parameter['name']
     in_string = in_dict[parameter['in']]
@@ -32,7 +31,6 @@ def parse_req_body(request_body: dict):
     DTO_name: str = get_DTO_name(request_body['$ref'])
     parse_file_DTO(config.FNAME, DTO_name)
 
-    print(json.dumps(request_body, indent=2))
     return f"@Body() {DTO_name[0].lower()}{DTO_name[1:]}: {DTO_name}"
 
 def generate_signature(metadata):
@@ -49,30 +47,22 @@ def generate_signature(metadata):
     return signature
 
 def parse_operation(endpoint: str, operation: str, metadata: dict):
-    # print(operation.capitalize())
-    # print(metadata.keys())
-    
     annotation = f'@{operation.capitalize()}()'
-    # params = f''
     
     signature = generate_signature(metadata)
-    print(annotation)
-    print(signature)
-    print()
-
-    dummy = \
-    """
-    @Get()
-    fetchAll(@Query('search', new DefaultValuePipe('')) searchString: string) {
-        return this.journalTypesService.fetchAll(searchString);
-    }
+    return f"""
+    {annotation}
+    {signature} {{
+        return this.myService.funcName();
+    }}
     """
 
 def parse_endpoint(endpoint, metadata):
     config.CURRENT_FOLDER = endpoint.replace('/', '\\')+'/'
     os.makedirs(f'./output/{config.CURRENT_FOLDER}', exist_ok=True)
     for operation in metadata.keys():
-        parse_operation(endpoint, operation, metadata[operation])
+        with open(f'./output/{config.CURRENT_FOLDER}name.controller.ts', 'a') as f:
+            f.write(parse_operation(endpoint, operation, metadata[operation]))
 
     # print(metadata['post'])
 
