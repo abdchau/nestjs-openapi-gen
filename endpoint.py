@@ -27,6 +27,7 @@ def parse_parameter(parameter: dict):
 
 def generate_signature(metadata):
     param_string = ''
+    print(metadata)
     if 'parameters' in metadata.keys():
         param_strings = [parse_parameter(parameter) for parameter in metadata['parameters']]
         param_string = ', '.join(param_strings)
@@ -60,13 +61,15 @@ def parse_endpoint(endpoint, metadata):
 
     # print(metadata['post'])
 
-def parse_file(filename):
+def parse_file_endpoint(filename, endpoint_name):
     with open(filename, 'r') as f:
         file_data = json.load(f)
 
-    for endpoint in file_data:
-        parse_endpoint(endpoint, file_data[endpoint])
-    
+    if endpoint_name == '':
+        for endpoint in file_data['paths']:
+            parse_endpoint(endpoint, file_data['paths'][endpoint])
+    else:
+        parse_endpoint(endpoint_name, file_data['paths'][endpoint_name])
 
 if __name__=='__main__':
-    parse_file('./source/endpoint.json')
+    parse_file_endpoint('./source/endpoint.json')
