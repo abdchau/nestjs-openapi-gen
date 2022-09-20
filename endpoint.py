@@ -16,7 +16,7 @@ def get_default_pipe_string(parameter):
     return default_pipe_string
 
 def parse_parameter(parameter: dict):
-    in_dict = {'query': 'Query'}
+    in_dict = {'query': 'Query', 'path' : 'Param'}
     # print(json.dumps(parameter, indent=2))
 
     param_name = parameter['name']
@@ -70,7 +70,7 @@ def parse_operation(endpoint: str, operation: str, metadata: dict):
 
 def parse_endpoint(endpoint, metadata):
     config.CURRENT_FOLDER = endpoint.replace('/', '\\')+'/'
-    os.makedirs(f'./output/{config.CURRENT_FOLDER}')
+    os.makedirs(f'./output/{config.CURRENT_FOLDER}', exist_ok=True)
     for operation in metadata.keys():
         parse_operation(endpoint, operation, metadata[operation])
 
