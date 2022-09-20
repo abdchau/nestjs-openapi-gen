@@ -60,8 +60,9 @@ def parse_DTO(DTO, metadata):
         f.write(f"export class {DTO} "+"{\n")
         
         if metadata['type'] == 'object':
-            for property in metadata['properties']:
-                f.write(parse_property(property, metadata['properties'][property]))
+            if 'properties' in metadata.keys():
+                for property in metadata['properties']:
+                    f.write(parse_property(property, metadata['properties'][property]))
         else:
             print('TYPE OF DTO IS NOT "object"')
         
