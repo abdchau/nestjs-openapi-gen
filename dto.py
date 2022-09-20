@@ -1,27 +1,58 @@
 import json
 
+FNAME = ''
 
 def get_DTO_name(s: str):
     return s.split('/')[-1]
 
+def get_ts_type(tipe):
+    return 'number' if tipe == 'integer' else tipe
+
 def parse_property(property, metadata):
     ret = ''
-    if metadata['type'] != 'array':
+
+    child_DTO_name = ''
+
+    if metadata.get('$ref', None) != None:
+        child_DTO_name = get_DTO_name(metadata['$ref'])
         ret = f"""
     @ApiProperty()
-    {property}: {metadata['type']};
-"""
-    else:
-        property_DTO_name = get_DTO_name(metadata['items']['$ref'])
-        ret = f"""
-    @ApiProperty({{
-        isArray: true,
-        type: {property_DTO_name},
-    }})
-    {property}: {property_DTO_name}[];
+    {property}: {child_DTO_name};
 """
 
-    print(property)
+    elif metadata['type'] != 'array':
+        ret = f"""
+    @ApiProperty()
+    {property}: {get_ts_type(metadata['type'])};
+"""
+
+
+    else:
+
+
+        if metadata['items'].get('$ref', None) != None:
+            child_DTO_name = get_DTO_name(metadata['items']['$ref'])
+            ret = f"""
+    @ApiProperty({{
+        isArray: true,
+        type: {child_DTO_name},
+    }})
+    {property}: {child_DTO_name}[];
+"""
+
+        else:
+            tipe = get_ts_type(metadata['items']['type'])
+            ret = f"""
+    @ApiProperty({{
+        isArray: true,
+        type: {tipe},
+    }})
+    {property}: {tipe}[];
+"""
+
+    if child_DTO_name != '':
+        parse_file_DTO(FNAME, child_DTO_name)
+
     return ret
 
 def parse_DTO(DTO, metadata):
@@ -39,7 +70,9 @@ def parse_DTO(DTO, metadata):
 
 
 def parse_file_DTO(filename, DTO_name):
-    with open(filename, 'r') as f:
+    global FNAME
+    FNAME = filename
+    with open(FNAME, 'r') as f:
         file_data = json.load(f)
 
     if DTO_name == '':
