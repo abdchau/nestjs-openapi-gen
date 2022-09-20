@@ -1,3 +1,4 @@
+from dto import parse_file_DTO
 from endpoint import parse_file_endpoint
 
 if __name__=='__main__':
@@ -12,8 +13,8 @@ if __name__=='__main__':
     """))
 
     if req == 1:
-        # parse_DTO(filename)
-        pass
+        DTO_name = input('Enter DTO to generate (default ALL DTOs): ')
+        parse_file_DTO(filename, DTO_name)
     elif req == 2:
         endpoint_name = input('Enter endpoint to generate (default ALL ENDPOINTS): ')
         parse_file_endpoint(filename, endpoint_name)
