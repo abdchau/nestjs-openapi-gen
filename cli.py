@@ -1,6 +1,6 @@
 import os
 
-from config import FNAME
+from config import config
 from dto import parse_file_DTO
 from endpoint import parse_file_endpoint
 
@@ -8,7 +8,7 @@ if __name__=='__main__':
     os.makedirs('output', exist_ok=True)
     s = input('Enter filename (default "./source/endpoint.json"): ')
     if s != '':
-        FNAME = s
+        config.FNAME = s
 
     req = int(input("""
     Enter 1 to generate DTO
@@ -17,8 +17,8 @@ if __name__=='__main__':
 
     if req == 1:
         DTO_name = input('Enter DTO to generate (default ALL DTOs): ')
-        parse_file_DTO(FNAME, DTO_name)
+        parse_file_DTO(config.FNAME, DTO_name)
     elif req == 2:
         endpoint_name = input('Enter endpoint to generate (default ALL ENDPOINTS): ')
-        parse_file_endpoint(FNAME, endpoint_name)
+        parse_file_endpoint(config.FNAME, endpoint_name)
 

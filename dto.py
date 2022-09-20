@@ -1,5 +1,5 @@
 import json
-from config import FNAME
+from config import config
 
 def get_DTO_name(s: str):
     return s.split('/')[-1]
@@ -50,12 +50,12 @@ def parse_property(property, metadata):
 """
 
     if child_DTO_name != '':
-        parse_file_DTO(FNAME, child_DTO_name)
+        parse_file_DTO(config.FNAME, child_DTO_name)
 
     return ret
 
 def parse_DTO(DTO, metadata):
-    with open(f'./output/{DTO}.dto.ts', 'w') as f:
+    with open(f'./output/{config.CURRENT_FOLDER}{DTO}.dto.ts', 'w') as f:
         f.write("import { ApiProperty } from '@nestjs/swagger';\n\n")
         f.write(f"export class {DTO} "+"{\n")
         
@@ -69,9 +69,8 @@ def parse_DTO(DTO, metadata):
 
 
 def parse_file_DTO(filename, DTO_name):
-    global FNAME
-    FNAME = filename
-    with open(FNAME, 'r') as f:
+    config.FNAME = filename
+    with open(config.FNAME, 'r') as f:
         file_data = json.load(f)
 
     if DTO_name == '':

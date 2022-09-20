@@ -1,1 +1,6 @@
-FNAME = './source/endpoint.json'
+class Config:
+    FNAME = './source/endpoint.json'
+
+    CURRENT_FOLDER = ''
+
+config = Config()
