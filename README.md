@@ -5,7 +5,7 @@ Python generator for nestjs code, given OpenAPI specification.
 No dependencies required.
 
 # Build and Test
-Run `python main.py`.
+Run `python cli.py`.
 
 # Contribute
 Create your own branch and open a pull request into main.

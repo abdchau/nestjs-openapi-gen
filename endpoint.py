@@ -1,4 +1,6 @@
 import json
+from config import FNAME
+from dto import get_DTO_name, parse_file_DTO
 
 def get_default_pipe_string(parameter):
     default_pipe_string = ''
@@ -24,15 +26,25 @@ def parse_parameter(parameter: dict):
 
     return param_string
 
+def parse_req_body(request_body: dict):
+    request_body = request_body['content']['application/json']['schema']
+    DTO_name: str = get_DTO_name(request_body['$ref'])
+    parse_file_DTO(FNAME, DTO_name)
+
+    print(json.dumps(request_body, indent=2))
+    return f"@Body() {DTO_name[0].lower()}{DTO_name[1:]}: {DTO_name}"
 
 def generate_signature(metadata):
     param_string = ''
-    print(metadata)
     if 'parameters' in metadata.keys():
         param_strings = [parse_parameter(parameter) for parameter in metadata['parameters']]
         param_string = ', '.join(param_strings)
+
+    body_string = ''
+    if 'requestBody' in metadata.keys():
+        body_string = parse_req_body(metadata['requestBody'])
         
-    signature = f'funcName({param_string})'
+    signature = f'funcName({param_string}{body_string})'
     return signature
 
 def parse_operation(endpoint: str, operation: str, metadata: dict):
@@ -72,4 +84,4 @@ def parse_file_endpoint(filename, endpoint_name):
         parse_endpoint(endpoint_name, file_data['paths'][endpoint_name])
 
 if __name__=='__main__':
-    parse_file_endpoint('./source/endpoint.json')
+    parse_file_endpoint('./source/endpoint.json', '')

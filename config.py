@@ -1,0 +1,1 @@
+FNAME = './source/endpoint.json'

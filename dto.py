@@ -1,6 +1,5 @@
 import json
-
-FNAME = ''
+from config import FNAME
 
 def get_DTO_name(s: str):
     return s.split('/')[-1]
