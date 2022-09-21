@@ -1,9 +1,11 @@
 # Introduction 
-This is a generator for typescript nestjs backend code with DTOs, given OpenAPI specification, written in Python.
+This is a generator for typescript nestjs backend code with DTOs, given an OpenAPI specification, written in Python.
 
 This generator does not attempt to be monolithic, instead focusing on providing a tool for the most common use case: writing a new endpoint in existing code and/or generating DTOs you don't want to type by hand.
 
- The generated code and DTOs contain annotations for Swagger. For more details, visit [@nestjs/swagger](https://www.npmjs.com/package/@nestjs/swagger). These may be made optional in the future.
+OpenAPI specifications can be generated using a visual tool. Many tools exist, both open source and proprietary. For the initiate, [Apicurio Studio](https://www.apicur.io/studio/) is a good start.
+
+ The generated code and DTOs contain annotations for NestJS Swagger. For more details, visit [@nestjs/swagger](https://www.npmjs.com/package/@nestjs/swagger). These may be made optional in the future.
  
 # Getting Started
 No dependencies are required.
