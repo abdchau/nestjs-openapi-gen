@@ -116,11 +116,11 @@ class EndpointParser:
         DTO_names = self.parse_response_dto(metadata, dto_parser)
         type_string = ""
         for dto_name in DTO_names:
-            type_string += f"\n\t\ttype: {dto_name}"
+            type_string += f"\n\t\ttype: {dto_name},"
 
         return f"""@ApiResponse({{
         status: {response_code},
-        description: 'Placeholder',{type_string},
+        description: 'Placeholder',{type_string}
     }})"""
 
     def parse_operation(self, endpoint: str, operation: str, metadata: dict, dto_parser: DTOParser):

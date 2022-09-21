@@ -2,6 +2,7 @@ import json
 import os
 
 from parsers.endpoint import EndpointParser
+from parsers.folder import FolderParser
 
 class ControllerParser:
     def __init__(self, filename, output_dir) -> None:
@@ -49,5 +50,6 @@ class ControllerParser:
         if controller_name == '':
             for controller in self.get_all_tags(file_data):
                 self.parse_controller(controller, self.get_controller_metadata(controller, file_data))
+                FolderParser(f'{self.base_folder}/{self.curr_folder}').parse_folder()
         else:
             self.parse_controller(controller_name, self.get_controller_metadata(controller_name, file_data))
