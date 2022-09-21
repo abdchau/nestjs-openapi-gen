@@ -93,7 +93,12 @@ class EndpointParser:
             response_object = response_object['content']['application/json']['schema']
         except:
             return DTO_names
-        if '$ref' in response_object:
+
+        if response_object['type'] == "array":
+            DTO_name: str = dto_parser.get_DTO_name(response_object['items']['$ref'])
+            dto_parser.parse_file_DTO(DTO_name)
+            DTO_names.append('['+DTO_name+']')
+        elif '$ref' in response_object:
             DTO_name: str = dto_parser.get_DTO_name(response_object['$ref'])
             dto_parser.parse_file_DTO(DTO_name)
             DTO_names.append(DTO_name)
@@ -115,12 +120,12 @@ class EndpointParser:
 
         return f"""@ApiResponse({{
         status: {response_code},
-        description: 'Placeholder',{type_string}
+        description: 'Placeholder',{type_string},
     }})"""
 
     def parse_operation(self, endpoint: str, operation: str, metadata: dict, dto_parser: DTOParser):
         auths = self.parse_summary(metadata.get('summary', ''))
-        annotation = f"@{operation.capitalize()}('{self.get_annotation_endpoint(endpoint)}')"
+        operation_annotation = f"@{operation.capitalize()}('{self.get_annotation_endpoint(endpoint)}')"
         func_name = metadata.get('operationId', 'funcName')
         if '_' in func_name:
             func_name = func_name.split('_')[-1]
@@ -132,8 +137,8 @@ class EndpointParser:
 
         return f"""
     {auths}
-    {annotation}
     {response_string}
+    {operation_annotation}
     {signature} {{
         return this.myService.{func_name}();
     }}
