@@ -1,4 +1,5 @@
 import json
+import yaml
 import os
 
 from parsers.dto import DTOParser
@@ -172,8 +173,12 @@ class EndpointParser:
 
 
     def parse_file_endpoint(self, endpoint_name=''):
-        with open(self.filename, 'r') as f:
-            file_data = json.load(f)
+        if 'yaml' in self.filename:
+            with open(self.filename, 'r') as f:
+                file_data = yaml.safe_load(f)
+        else:
+            with open(self.filename, 'r') as f:
+                file_data = json.load(f)
 
         if endpoint_name == '':
             for endpoint in file_data['paths']:

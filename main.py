@@ -12,7 +12,7 @@ if __name__=='__main__':
     except:
         pass
     os.makedirs(output_dir, exist_ok=True)
-    filename = './source/endpoint.json'
+    filename = './source/spec.json'
     s = input(f'Enter filename (default "{filename}"): ')
     if s != '':
         filename = s

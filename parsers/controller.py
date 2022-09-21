@@ -1,4 +1,5 @@
 import json
+import yaml
 import os
 
 from parsers.endpoint import EndpointParser
@@ -44,8 +45,12 @@ class ControllerParser:
         return tags
 
     def parse_file_controller(self, controller_name):
-        with open(self.filename, 'r') as f:
-            file_data = json.load(f)
+        if 'yaml' in self.filename:
+            with open(self.filename, 'r') as f:
+                file_data = yaml.safe_load(f)
+        else:
+            with open(self.filename, 'r') as f:
+                file_data = json.load(f)
 
         if controller_name == '':
             for controller in self.get_all_tags(file_data):

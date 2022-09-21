@@ -1,4 +1,5 @@
 import json
+import yaml
 
 from parsers.options import OptionsBuilder
 
@@ -77,8 +78,12 @@ class DTOParser:
 
 
     def parse_file_DTO(self, DTO_name):
-        with open(self.filename, 'r') as f:
-            file_data = json.load(f)
+        if 'yaml' in self.filename:
+            with open(self.filename, 'r') as f:
+                file_data = yaml.safe_load(f)
+        else:
+            with open(self.filename, 'r') as f:
+                file_data = json.load(f)
 
         if DTO_name == '':
             for DTO in file_data['components']['schemas']:
