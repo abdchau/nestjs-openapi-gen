@@ -46,10 +46,17 @@ def generate_signature(metadata):
     signature = f'funcName({param_string}{body_string})'
     return signature
 
+def get_annotation_endpoint(endpoint: str):
+    tokens = endpoint.split('/')
+    if '{' in tokens[-1]:
+        return tokens[-1].replace('{', ':').replace('}', '')
+    else:
+        return tokens[-1]
+
 def parse_operation(endpoint: str, operation: str, metadata: dict):
-    annotation = f'@{operation.capitalize()}()'
-    
+    annotation = f"@{operation.capitalize()}('{get_annotation_endpoint(endpoint)}')"
     signature = generate_signature(metadata)
+
     return f"""
     {annotation}
     {signature} {{
