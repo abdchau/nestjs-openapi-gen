@@ -6,7 +6,10 @@ from dto import parse_file_DTO
 from endpoint import parse_file_endpoint
 
 if __name__=='__main__':
-    shutil.rmtree('./output')
+    try:
+        shutil.rmtree('./output')
+    except:
+        pass
     os.makedirs('./output', exist_ok=True)
     s = input('Enter filename (default "./source/endpoint.json"): ')
     if s != '':
