@@ -149,11 +149,12 @@ class EndpointParser:
 
     def parse_endpoint(self, endpoint, metadata):
         self.curr_folder = endpoint.replace('/', '\\')+'/'
-        os.makedirs(f'{self.base_folder}/{self.curr_folder}', exist_ok=True)
+        endpoint_dir = f'{self.base_folder}/{self.curr_folder}'
+        os.makedirs(endpoint_dir, exist_ok=True)
 
         dto_parser = DTOParser(self.filename, self.base_folder, self.curr_folder)
         for operation in metadata.keys():
-            with open(f'{self.base_folder}/{self.curr_folder}name.controller.ts', 'a') as f:
+            with open(f'{endpoint_dir}name.controller.ts', 'a') as f:
                 f.write(self.parse_operation(endpoint, operation, metadata[operation], dto_parser))
 
         # print(metadata['post'])
