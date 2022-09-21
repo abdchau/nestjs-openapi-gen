@@ -124,6 +124,9 @@ class EndpointParser:
     }})"""
 
     def parse_operation(self, endpoint: str, operation: str, metadata: dict, dto_parser: DTOParser):
+        tags = metadata.get('tags', ['default'])
+
+
         auths = self.parse_summary(metadata.get('summary', ''))
         operation_annotation = f"@{operation.capitalize()}('{self.get_annotation_endpoint(endpoint)}')"
         func_name = metadata.get('operationId', 'funcName')
@@ -155,7 +158,7 @@ class EndpointParser:
 
         # print(metadata['post'])
 
-    def parse_file_endpoint(self, endpoint_name):
+    def parse_file_endpoint(self, endpoint_name=''):
         with open(self.filename, 'r') as f:
             file_data = json.load(f)
 
