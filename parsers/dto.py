@@ -16,8 +16,13 @@ class DTOParser:
 
     def parse_property(self, property, metadata):
         options_builder = OptionsBuilder()
-        ret = ""
+        if metadata.get('required', False):
+            options_builder.add_option('required', 'true')
+        else:
+            options_builder.add_option('required', 'false')
+            property += "?"
 
+        ret = ""
         child_DTO_name = ''
 
         if metadata.get('$ref', None) != None:
@@ -61,6 +66,8 @@ class DTOParser:
             
             if metadata['type'] == 'object':
                 if 'properties' in metadata.keys():
+                    for property in metadata.get('required', []):
+                        metadata['properties'][property]['required'] = True
                     for property in metadata['properties']:
                         f.write(self.parse_property(property, metadata['properties'][property]))
             else:
