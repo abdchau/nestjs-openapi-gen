@@ -1,13 +1,12 @@
 import json
-from config import config
 import os
 from dto import DTOParser
 
 class EndpointParser:
-    def __init__(self, filename) -> None:
+    def __init__(self, filename, output_dir) -> None:
         self.filename = filename
-        self.dto_parser = DTOParser(self.filename)
-
+        self.base_folder = output_dir
+        self.curr_folder = self.base_folder
 
     def get_default_pipe_string(self, parameter):
         default_pipe_string = ''
@@ -32,14 +31,14 @@ class EndpointParser:
 
         return param_string
 
-    def parse_req_body(self, request_body: dict):
+    def parse_req_body(self, request_body: dict, dto_parser: DTOParser):
         request_body = request_body['content']['application/json']['schema']
-        DTO_name: str = self.dto_parser.get_DTO_name(request_body['$ref'])
-        self.dto_parser.parse_file_DTO(DTO_name)
+        DTO_name: str = dto_parser.get_DTO_name(request_body['$ref'])
+        dto_parser.parse_file_DTO(DTO_name)
 
         return f"@Body() {DTO_name[0].lower()}{DTO_name[1:]}: {DTO_name}"
 
-    def generate_signature(self, metadata):
+    def generate_signature(self, metadata, dto_parser: DTOParser):
         param_string = ''
         if 'parameters' in metadata.keys():
             param_strings = [self.parse_parameter(parameter) for parameter in metadata['parameters']]
@@ -47,7 +46,7 @@ class EndpointParser:
 
         body_string = ''
         if 'requestBody' in metadata.keys():
-            body_string = self.parse_req_body(metadata['requestBody'])
+            body_string = self.parse_req_body(metadata['requestBody'], dto_parser)
             
         signature = f'funcName({param_string}{body_string})'
         return signature
@@ -59,9 +58,9 @@ class EndpointParser:
         else:
             return tokens[-1]
 
-    def parse_operation(self, endpoint: str, operation: str, metadata: dict):
+    def parse_operation(self, endpoint: str, operation: str, metadata: dict, dto_parser: DTOParser):
         annotation = f"@{operation.capitalize()}('{self.get_annotation_endpoint(endpoint)}')"
-        signature = self.generate_signature(metadata)
+        signature = self.generate_signature(metadata, dto_parser)
 
         return f"""
     {annotation}
@@ -71,11 +70,13 @@ class EndpointParser:
     """
 
     def parse_endpoint(self, endpoint, metadata):
-        config.CURRENT_FOLDER = endpoint.replace('/', '\\')+'/'
-        os.makedirs(f'./output/{config.CURRENT_FOLDER}', exist_ok=True)
+        self.curr_folder = endpoint.replace('/', '\\')+'/'
+        os.makedirs(f'{self.base_folder}/{self.curr_folder}', exist_ok=True)
+
+        dto_parser = DTOParser(self.filename, self.base_folder, self.curr_folder)
         for operation in metadata.keys():
-            with open(f'./output/{config.CURRENT_FOLDER}name.controller.ts', 'a') as f:
-                f.write(self.parse_operation(endpoint, operation, metadata[operation]))
+            with open(f'{self.base_folder}/{self.curr_folder}name.controller.ts', 'a') as f:
+                f.write(self.parse_operation(endpoint, operation, metadata[operation], dto_parser))
 
         # print(metadata['post'])
 
@@ -90,4 +91,4 @@ class EndpointParser:
             self.parse_endpoint(endpoint_name, file_data['paths'][endpoint_name])
 
 if __name__=='__main__':
-    EndpointParser('./source/endpoint.json').parse_file_endpoint('')
+    EndpointParser('./source/endpoint.json', './output').parse_file_endpoint('')

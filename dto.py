@@ -1,10 +1,10 @@
 import json
-from config import config
-
 
 class DTOParser:
-    def __init__(self, filename) -> None:
+    def __init__(self, filename, output_dir, curr_folder='') -> None:
         self.filename = filename
+        self.base_folder = output_dir
+        self.curr_folder = curr_folder
 
     def get_DTO_name(self, s: str):
         return s.split('/')[-1]
@@ -60,7 +60,7 @@ class DTOParser:
         return ret
 
     def parse_DTO(self, DTO, metadata):
-        with open(f'./output/{config.CURRENT_FOLDER}{DTO}.dto.ts', 'w') as f:
+        with open(f'{self.base_folder}/{self.curr_folder}{DTO}.dto.ts', 'w') as f:
             f.write("import { ApiProperty } from '@nestjs/swagger';\n\n")
             f.write(f"export class {DTO} "+"{\n")
             
@@ -86,4 +86,4 @@ class DTOParser:
 
 
 if __name__=='__main__':
-    DTOParser('./source/endpoint.json').parse_file_DTO('')
+    DTOParser('./source/endpoint.json', './output').parse_file_DTO('')
