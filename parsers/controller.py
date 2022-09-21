@@ -11,7 +11,6 @@ class ControllerParser:
 
 
     def parse_controller(self, controller, controller_endpoints):
-        print(controller_endpoints)
         self.curr_folder = controller
 
         controller_dir = f'{self.base_folder}/{self.curr_folder}'
@@ -39,7 +38,7 @@ class ControllerParser:
         tags = set()
         for path in file_data['paths']:
             for operation in file_data['paths'][path]:
-                tags.add(file_data['paths'][path][operation].get('tags', ['default']))
+                tags.add(file_data['paths'][path][operation].get('tags', ['default'])[0])
 
         return tags
 
