@@ -60,3 +60,9 @@ export class {controller_class_name}Controller {{
     constructor() {{}}""")
             f.write(controller_code)
             f.write("}\n")
+
+        controller_folders = os.listdir(self.controller_dir)
+        controller_folders.remove('dtos')
+        controller_folders.remove(controller_code_file)
+        for folder in controller_folders:
+            shutil.rmtree(os.path.join(self.controller_dir, folder))
