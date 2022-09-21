@@ -1,5 +1,7 @@
 import json
 
+from parsers.options import OptionsBuilder
+
 class DTOParser:
     def __init__(self, filename, output_dir, curr_folder='') -> None:
         self.filename = filename
@@ -13,51 +15,44 @@ class DTOParser:
         return 'number' if tipe == 'integer' else tipe
 
     def parse_property(self, property, metadata):
-        ret = ''
+        options_builder = OptionsBuilder()
+        ret = ""
 
         child_DTO_name = ''
 
         if metadata.get('$ref', None) != None:
             child_DTO_name = self.get_DTO_name(metadata['$ref'])
             ret = f"""
-    @ApiProperty()
     {property}: {child_DTO_name};
 """
 
         elif metadata['type'] != 'array':
             ret = f"""
-    @ApiProperty()
     {property}: {self.get_ts_type(metadata['type'])};
 """
 
 
         else:
 
-
+            options_builder.add_option("isArray", "true")
             if metadata['items'].get('$ref', None) != None:
                 child_DTO_name = self.get_DTO_name(metadata['items']['$ref'])
+                options_builder.add_option("type",  child_DTO_name)
                 ret = f"""
-    @ApiProperty({{
-        isArray: true,
-        type: {child_DTO_name},
-    }})
     {property}: {child_DTO_name}[];
 """
 
             else:
                 tipe = self.get_ts_type(metadata['items']['type'])
+                options_builder.add_option("type", tipe)
                 ret = f"""
-    @ApiProperty({{
-        isArray: true,
-        type: {tipe},
-    }})
     {property}: {tipe}[];
 """
 
         if child_DTO_name != '':
             self.parse_file_DTO(child_DTO_name)
 
-        return ret
+        return f"\t@ApiProperty({options_builder.options}){ret}\n"
 
     def parse_DTO(self, DTO, metadata):
         with open(f'{self.base_folder}/{self.curr_folder}{DTO}.dto.ts', 'w') as f:
