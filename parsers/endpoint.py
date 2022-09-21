@@ -30,29 +30,40 @@ class EndpointParser:
         param_type = parameter['schema']['type']
         param_string = f"@{in_string}('{param_name}'{default_pipe_string}) {param_name}: {param_type}"
 
-        return param_string
+        return param_string, param_name, param_type
 
     def parse_req_body(self, request_body: dict, dto_parser: DTOParser):
         request_body = request_body['content']['application/json']['schema']
         DTO_name: str = dto_parser.get_DTO_name(request_body['$ref'])
         dto_parser.parse_file_DTO(DTO_name)
 
-        return f"@Body() {DTO_name[0].lower()}{DTO_name[1:]}: {DTO_name}"
+        arg_name = f"{DTO_name[0].lower()}{DTO_name[1:]}"
+        return f"@Body() {arg_name}: {DTO_name}", arg_name, DTO_name 
 
     def generate_signature(self, metadata, func_name: str, dto_parser: DTOParser):
+        args = []
+        arg_types = []
         param_string = ''
         if 'parameters' in metadata.keys():
-            param_strings = [self.parse_parameter(parameter) for parameter in metadata['parameters']]
+            param_strings = []
+            for parameter in metadata['parameters']:
+                p_string, arg_name, arg_type = self.parse_parameter(parameter)
+                param_strings.append(p_string)
+                args.append(arg_name)
+                arg_types.append(arg_type)
             param_string = ', '.join(param_strings)
 
         body_string = ''
         if 'requestBody' in metadata.keys():
             if param_string != '':
                 body_string = ", "
-            body_string += self.parse_req_body(metadata['requestBody'], dto_parser)
-            
+            b_string, arg_name, arg_type = self.parse_req_body(metadata['requestBody'], dto_parser)
+            body_string += b_string
+            args.append(arg_name)
+            arg_types.append(arg_type)
+
         signature = f'{func_name}({param_string}{body_string})'
-        return signature
+        return signature, args, arg_types
 
     def get_annotation_endpoint(self, endpoint: str):
         tokens = endpoint.split('/')
@@ -74,7 +85,7 @@ class EndpointParser:
         
         jwt_string = ''
         if options['jwt'] == 'false':
-            jwt_string = "@Public()"
+            jwt_string = "@Public()\n\t"
         elif options['jwt'] != 'true':
             raise Exception('jwt argument in summary is not correct')
 
@@ -84,8 +95,7 @@ class EndpointParser:
         roles_string = roles_string[2:]
         
         options_string = f"""
-    {jwt_string}
-    @Roles({roles_string})"""
+    {jwt_string}@Roles({roles_string})"""
 
         return options_string        
 
@@ -126,17 +136,16 @@ class EndpointParser:
     }})"""
 
     def parse_operation(self, endpoint: str, operation: str, metadata: dict, dto_parser: DTOParser):
-        tags = metadata.get('tags', ['default'])
-
-
         auths = self.parse_summary(metadata.get('summary', ''))
         operation_annotation = f"@{operation.capitalize()}('{self.get_annotation_endpoint(endpoint)}')"
         func_name = metadata.get('operationId', 'funcName')
         if '_' in func_name:
             func_name = func_name.split('_')[-1]
 
-        signature = self.generate_signature(metadata, func_name, dto_parser)
-        print(signature)
+        signature, args, arg_types = self.generate_signature(metadata, func_name, dto_parser)
+        service_signature = []
+        for i in range(len(args)):
+            service_signature.append(f"{args[i]}: {arg_types[i]}")
 
         response_string = ''
         for response_code in metadata['responses']:
@@ -147,9 +156,9 @@ class EndpointParser:
     {response_string}
     {operation_annotation}
     {signature} {{
-        return this.myService.{func_name}();
-    }}
-    """
+        // {func_name}({', '.join(service_signature)}) {{}}
+        return this.myService.{func_name}({', '.join(args)});
+    }}"""
 
     def parse_endpoint(self, endpoint, metadata):
         self.curr_folder = endpoint.replace('/', '\\')+'/'
