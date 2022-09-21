@@ -39,7 +39,7 @@ class EndpointParser:
 
         return f"@Body() {DTO_name[0].lower()}{DTO_name[1:]}: {DTO_name}"
 
-    def generate_signature(self, metadata, dto_parser: DTOParser):
+    def generate_signature(self, metadata, func_name: str, dto_parser: DTOParser):
         param_string = ''
         if 'parameters' in metadata.keys():
             param_strings = [self.parse_parameter(parameter) for parameter in metadata['parameters']]
@@ -49,7 +49,7 @@ class EndpointParser:
         if 'requestBody' in metadata.keys():
             body_string = self.parse_req_body(metadata['requestBody'], dto_parser)
             
-        signature = f'funcName({param_string}{body_string})'
+        signature = f'{func_name}({param_string}{body_string})'
         return signature
 
     def get_annotation_endpoint(self, endpoint: str):
@@ -91,13 +91,17 @@ class EndpointParser:
     def parse_operation(self, endpoint: str, operation: str, metadata: dict, dto_parser: DTOParser):
         auths = self.parse_summary(metadata.get('summary', ''))
         annotation = f"@{operation.capitalize()}('{self.get_annotation_endpoint(endpoint)}')"
-        signature = self.generate_signature(metadata, dto_parser)
+        func_name = metadata.get('operationId', 'funcName')
+        if '_' in func_name:
+            func_name = func_name.split('_')[-1]
+
+        signature = self.generate_signature(metadata, func_name, dto_parser)
 
         return f"""
     {auths}
     {annotation}
     {signature} {{
-        return this.myService.funcName();
+        return this.myService.{func_name}();
     }}
     """
 
