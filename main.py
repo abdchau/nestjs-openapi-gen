@@ -3,7 +3,7 @@ import shutil
 
 from config import config
 from dto import parse_file_DTO
-from endpoint import parse_file_endpoint
+from endpoint import EndpointParser
 
 if __name__=='__main__':
     try:
@@ -25,6 +25,6 @@ if __name__=='__main__':
         parse_file_DTO(config.FNAME, DTO_name)
     elif req == 2:
         endpoint_name = input('Enter endpoint to generate (default ALL ENDPOINTS): ')
-        parse_file_endpoint(config.FNAME, endpoint_name)
+        EndpointParser().parse_file_endpoint(config.FNAME, endpoint_name)
 
     print('\n...done')
