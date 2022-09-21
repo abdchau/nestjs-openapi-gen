@@ -1,8 +1,8 @@
 import os
 import shutil
 
-from dto import DTOParser
-from endpoint import EndpointParser
+from parsers.dto import DTOParser
+from parsers.endpoint import EndpointParser
 
 if __name__=='__main__':
     output_dir = './output'

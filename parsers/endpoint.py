@@ -1,6 +1,6 @@
 import json
 import os
-from dto import DTOParser
+from parsers.dto import DTOParser
 
 class EndpointParser:
     def __init__(self, filename, output_dir) -> None:
