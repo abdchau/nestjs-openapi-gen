@@ -53,3 +53,4 @@ class ControllerParser:
                 FolderParser(f'{self.base_folder}/{self.curr_folder}').parse_folder()
         else:
             self.parse_controller(controller_name, self.get_controller_metadata(controller_name, file_data))
+            FolderParser(f'{self.base_folder}/{self.curr_folder}').parse_folder()

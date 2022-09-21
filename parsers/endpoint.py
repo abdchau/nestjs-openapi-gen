@@ -1,7 +1,7 @@
 import json
 import os
+
 from parsers.dto import DTOParser
-from parsers.options import OptionsBuilder
 
 class EndpointParser:
     def __init__(self, filename, output_dir) -> None:
@@ -47,7 +47,9 @@ class EndpointParser:
 
         body_string = ''
         if 'requestBody' in metadata.keys():
-            body_string = self.parse_req_body(metadata['requestBody'], dto_parser)
+            if param_string != '':
+                body_string = ", "
+            body_string += self.parse_req_body(metadata['requestBody'], dto_parser)
             
         signature = f'{func_name}({param_string}{body_string})'
         return signature
@@ -134,6 +136,8 @@ class EndpointParser:
             func_name = func_name.split('_')[-1]
 
         signature = self.generate_signature(metadata, func_name, dto_parser)
+        print(signature)
+
         response_string = ''
         for response_code in metadata['responses']:
             response_string += self.parse_response(response_code, metadata['responses'][response_code], dto_parser)
@@ -157,7 +161,6 @@ class EndpointParser:
             with open(f'{endpoint_dir}name.controller.ts', 'a') as f:
                 f.write(self.parse_operation(endpoint, operation, metadata[operation], dto_parser))
 
-        # print(metadata['post'])
 
     def parse_file_endpoint(self, endpoint_name=''):
         with open(self.filename, 'r') as f:

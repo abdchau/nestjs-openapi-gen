@@ -13,7 +13,7 @@ if __name__=='__main__':
         pass
     os.makedirs(output_dir, exist_ok=True)
     filename = './source/endpoint.json'
-    s = input('Enter filename (default "./source/endpoint.json"): ')
+    s = input(f'Enter filename (default "{filename}"): ')
     if s != '':
         filename = s
 
