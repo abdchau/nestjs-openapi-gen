@@ -1,6 +1,7 @@
 import json
 import os
 from parsers.dto import DTOParser
+from parsers.options import OptionsBuilder
 
 class EndpointParser:
     def __init__(self, filename, output_dir) -> None:
@@ -58,11 +59,42 @@ class EndpointParser:
         else:
             return tokens[-1]
 
+
+    def parse_summary(self, summary: str):
+        # "jwt = true; roles = Admin, Doctor;"
+        if summary == '':
+            return ''
+        if summary[-1] == ';':
+            summary = summary[:-1]
+        summary = "".join(summary.split())
+        tokens = [token.split('=') for token in summary.lower().split(';')]
+        options = {token[0]: token[1] for token in tokens}
+        
+        jwt_string = ''
+        if options['jwt'] == 'false':
+            jwt_string = "@Public()"
+        elif options['jwt'] != 'true':
+            raise Exception('jwt argument in summary is not correct')
+
+        roles_string = ''
+        for role in options['roles'].split(','):
+            roles_string += f', Role.{role.capitalize()}'
+        roles_string = roles_string[2:]
+        
+        options_string = f"""
+    {jwt_string}
+    @Roles({roles_string})"""
+
+        return options_string        
+        
+
     def parse_operation(self, endpoint: str, operation: str, metadata: dict, dto_parser: DTOParser):
+        auths = self.parse_summary(metadata.get('summary', ''))
         annotation = f"@{operation.capitalize()}('{self.get_annotation_endpoint(endpoint)}')"
         signature = self.generate_signature(metadata, dto_parser)
 
         return f"""
+    {auths}
     {annotation}
     {signature} {{
         return this.myService.funcName();
