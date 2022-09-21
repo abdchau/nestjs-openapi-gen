@@ -86,7 +86,37 @@ class EndpointParser:
     @Roles({roles_string})"""
 
         return options_string        
-        
+
+    def parse_response_dto(self, response_object: dict, dto_parser: DTOParser):
+        DTO_names = []
+        try:
+            response_object = response_object['content']['application/json']['schema']
+        except:
+            return DTO_names
+        if '$ref' in response_object:
+            DTO_name: str = dto_parser.get_DTO_name(response_object['$ref'])
+            dto_parser.parse_file_DTO(DTO_name)
+            DTO_names.append(DTO_name)
+        else:
+            for property in response_object['properties']:
+                if '$ref' in response_object['properties'][property]:
+                    DTO_name: str = dto_parser.get_DTO_name(response_object['properties'][property]['$ref'])
+                    dto_parser.parse_file_DTO(DTO_name)
+                    DTO_names.append("Pagination"+DTO_name)
+                        
+
+        return DTO_names
+
+    def parse_response(self, response_code, metadata, dto_parser: DTOParser):
+        DTO_names = self.parse_response_dto(metadata, dto_parser)
+        type_string = ""
+        for dto_name in DTO_names:
+            type_string += f"\n\t\ttype: {dto_name}"
+
+        return f"""@ApiResponse({{
+        status: {response_code},
+        description: 'Placeholder',{type_string}
+    }})"""
 
     def parse_operation(self, endpoint: str, operation: str, metadata: dict, dto_parser: DTOParser):
         auths = self.parse_summary(metadata.get('summary', ''))
@@ -96,10 +126,14 @@ class EndpointParser:
             func_name = func_name.split('_')[-1]
 
         signature = self.generate_signature(metadata, func_name, dto_parser)
+        response_string = ''
+        for response_code in metadata['responses']:
+            response_string += self.parse_response(response_code, metadata['responses'][response_code], dto_parser)
 
         return f"""
     {auths}
     {annotation}
+    {response_string}
     {signature} {{
         return this.myService.{func_name}();
     }}
