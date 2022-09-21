@@ -2,7 +2,7 @@ import os
 import shutil
 
 from config import config
-from dto import parse_file_DTO
+from dto import DTOParser
 from endpoint import EndpointParser
 
 if __name__=='__main__':
@@ -22,7 +22,7 @@ if __name__=='__main__':
 
     if req == 1:
         DTO_name = input('Enter DTO to generate (default ALL DTOs): ')
-        parse_file_DTO(config.FNAME, DTO_name)
+        DTOParser().parse_file_DTO(config.FNAME, DTO_name)
     elif req == 2:
         endpoint_name = input('Enter endpoint to generate (default ALL ENDPOINTS): ')
         EndpointParser().parse_file_endpoint(config.FNAME, endpoint_name)

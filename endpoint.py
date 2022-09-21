@@ -1,9 +1,13 @@
 import json
 from config import config
 import os
-from dto import get_DTO_name, parse_file_DTO
+from dto import DTOParser
 
 class EndpointParser:
+    def __init__(self) -> None:
+        self.dto_parser = DTOParser()
+
+
     def get_default_pipe_string(self, parameter):
         default_pipe_string = ''
 
@@ -29,8 +33,8 @@ class EndpointParser:
 
     def parse_req_body(self, request_body: dict):
         request_body = request_body['content']['application/json']['schema']
-        DTO_name: str = get_DTO_name(request_body['$ref'])
-        parse_file_DTO(config.FNAME, DTO_name)
+        DTO_name: str = self.dto_parser.get_DTO_name(request_body['$ref'])
+        self.dto_parser.parse_file_DTO(config.FNAME, DTO_name)
 
         return f"@Body() {DTO_name[0].lower()}{DTO_name[1:]}: {DTO_name}"
 
@@ -59,11 +63,11 @@ class EndpointParser:
         signature = self.generate_signature(metadata)
 
         return f"""
-        {annotation}
-        {signature} {{
-            return this.myService.funcName();
-        }}
-        """
+    {annotation}
+    {signature} {{
+        return this.myService.funcName();
+    }}
+    """
 
     def parse_endpoint(self, endpoint, metadata):
         config.CURRENT_FOLDER = endpoint.replace('/', '\\')+'/'
