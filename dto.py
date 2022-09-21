@@ -3,6 +3,9 @@ from config import config
 
 
 class DTOParser:
+    def __init__(self, filename) -> None:
+        self.filename = filename
+
     def get_DTO_name(self, s: str):
         return s.split('/')[-1]
 
@@ -52,7 +55,7 @@ class DTOParser:
 """
 
         if child_DTO_name != '':
-            self.parse_file_DTO(config.FNAME, child_DTO_name)
+            self.parse_file_DTO(child_DTO_name)
 
         return ret
 
@@ -71,9 +74,8 @@ class DTOParser:
             f.write("}\n")
 
 
-    def parse_file_DTO(self, filename, DTO_name):
-        config.FNAME = filename
-        with open(config.FNAME, 'r') as f:
+    def parse_file_DTO(self, DTO_name):
+        with open(self.filename, 'r') as f:
             file_data = json.load(f)
 
         if DTO_name == '':
@@ -84,4 +86,4 @@ class DTOParser:
 
 
 if __name__=='__main__':
-    DTOParser().parse_file_DTO('./source/endpoint.json', '')
+    DTOParser('./source/endpoint.json').parse_file_DTO('')

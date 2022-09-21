@@ -4,8 +4,9 @@ import os
 from dto import DTOParser
 
 class EndpointParser:
-    def __init__(self) -> None:
-        self.dto_parser = DTOParser()
+    def __init__(self, filename) -> None:
+        self.filename = filename
+        self.dto_parser = DTOParser(self.filename)
 
 
     def get_default_pipe_string(self, parameter):
@@ -34,7 +35,7 @@ class EndpointParser:
     def parse_req_body(self, request_body: dict):
         request_body = request_body['content']['application/json']['schema']
         DTO_name: str = self.dto_parser.get_DTO_name(request_body['$ref'])
-        self.dto_parser.parse_file_DTO(config.FNAME, DTO_name)
+        self.dto_parser.parse_file_DTO(DTO_name)
 
         return f"@Body() {DTO_name[0].lower()}{DTO_name[1:]}: {DTO_name}"
 
@@ -78,8 +79,8 @@ class EndpointParser:
 
         # print(metadata['post'])
 
-    def parse_file_endpoint(self, filename, endpoint_name):
-        with open(filename, 'r') as f:
+    def parse_file_endpoint(self, endpoint_name):
+        with open(self.filename, 'r') as f:
             file_data = json.load(f)
 
         if endpoint_name == '':
@@ -89,4 +90,4 @@ class EndpointParser:
             self.parse_endpoint(endpoint_name, file_data['paths'][endpoint_name])
 
 if __name__=='__main__':
-    EndpointParser().parse_file_endpoint('./source/endpoint.json', '')
+    EndpointParser('./source/endpoint.json').parse_file_endpoint('')
