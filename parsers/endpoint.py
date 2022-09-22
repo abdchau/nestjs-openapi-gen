@@ -73,6 +73,8 @@ class EndpointParser:
         return signature, args, arg_types, query_not_required
 
     def get_annotation_endpoint(self, endpoint: str):
+        if endpoint.count('/') == 1:
+            return ''
         tokens = endpoint.split('/')
         if '{' in tokens[-1]:
             return tokens[-1].replace('{', ':').replace('}', '')
@@ -140,8 +142,7 @@ class EndpointParser:
             type_string += f"\n\t\ttype: {dto_name},"
 
         return f"""@ApiResponse({{
-        status: {response_code},
-        description: 'Placeholder',{type_string}
+        status: {response_code},{type_string}
     }})"""
 
     def parse_operation(self, endpoint: str, operation: str, metadata: dict, dto_parser: DTOParser):
