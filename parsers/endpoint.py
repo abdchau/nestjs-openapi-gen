@@ -10,28 +10,31 @@ class EndpointParser:
         self.base_folder = output_dir
         self.curr_folder = self.base_folder
 
-    def get_default_pipe_string(self, parameter):
-        default_pipe_string = ''
+    # def get_default_pipe_string(self, parameter):
+    #     default_pipe_string = ''
 
-        default_type_value = {'string': "''", 'integer': 1}
-        if parameter.get('required') == None:
-            parameter['required'] = True
+    #     default_type_value = {'string': "''", 'integer': 1}
+    #     if parameter.get('required') == None:
+    #         parameter['required'] = False
 
-        if not parameter['required']:
-            default_pipe_string = f", new DefaultValuePipe({default_type_value[parameter['schema']['type']]})"
+    #     if not parameter['required']:
+    #         default_pipe_string = f", new DefaultValuePipe({default_type_value[parameter['schema']['type']]})"
 
-        return default_pipe_string
+    #     return default_pipe_string
 
     def parse_parameter(self, parameter: dict):
         in_dict = {'query': 'Query', 'path' : 'Param'}
 
         param_name = parameter['name']
         in_string = in_dict[parameter['in']]
-        default_pipe_string = self.get_default_pipe_string(parameter)
-        param_type = parameter['schema']['type']
+        default_pipe_string = ''#self.get_default_pipe_string(parameter)
+        param_type = 'number' if parameter['schema']['type'] =='integer' else parameter['schema']['type']
         param_string = f"@{in_string}('{param_name}'{default_pipe_string}) {param_name}: {param_type}"
 
-        return param_string, param_name, param_type
+        if parameter.get('required') == None:
+            parameter['required'] = False
+        
+        return param_string, param_name, param_type, parameter['required']
 
     def parse_req_body(self, request_body: dict, dto_parser: DTOParser):
         request_body = request_body['content']['application/json']['schema']
@@ -44,11 +47,14 @@ class EndpointParser:
     def generate_signature(self, metadata, func_name: str, dto_parser: DTOParser):
         args = []
         arg_types = []
+        query_not_required = []
         param_string = ''
         if 'parameters' in metadata.keys():
             param_strings = []
             for parameter in metadata['parameters']:
-                p_string, arg_name, arg_type = self.parse_parameter(parameter)
+                p_string, arg_name, arg_type, required = self.parse_parameter(parameter)
+                if not required:
+                    query_not_required.append(f"'{arg_name}'")
                 param_strings.append(p_string)
                 args.append(arg_name)
                 arg_types.append(arg_type)
@@ -64,7 +70,7 @@ class EndpointParser:
             arg_types.append(arg_type)
 
         signature = f'{func_name}({param_string}{body_string})'
-        return signature, args, arg_types
+        return signature, args, arg_types, query_not_required
 
     def get_annotation_endpoint(self, endpoint: str):
         tokens = endpoint.split('/')
@@ -107,7 +113,9 @@ class EndpointParser:
         except:
             return DTO_names
 
-        if response_object['type'] == "array":
+        if response_object.get('type') == "array":
+            if response_object['items'].get('$ref', None) == None:
+                return DTO_names
             DTO_name: str = dto_parser.get_DTO_name(response_object['items']['$ref'])
             dto_parser.parse_file_DTO(DTO_name)
             DTO_names.append('['+DTO_name+']')
@@ -143,7 +151,7 @@ class EndpointParser:
         if '_' in func_name:
             func_name = func_name.split('_')[-1]
 
-        signature, args, arg_types = self.generate_signature(metadata, func_name, dto_parser)
+        signature, args, arg_types, query_not_required = self.generate_signature(metadata, func_name, dto_parser)
         service_signature = []
         for i in range(len(args)):
             service_signature.append(f"{args[i]}: {arg_types[i]}")
@@ -152,9 +160,11 @@ class EndpointParser:
         for response_code in metadata['responses']:
             response_string += self.parse_response(response_code, metadata['responses'][response_code], dto_parser)
 
+        query_not_required_string = '' if len(query_not_required) == 0 else f"\n\t@QueryNotRequired([{', '.join(query_not_required)}])"
+
         return f"""
     {auths}
-    {response_string}
+    {response_string}{query_not_required_string}
     {operation_annotation}
     {signature} {{
         // {func_name}({', '.join(service_signature)}) {{}}
