@@ -146,6 +146,7 @@ class EndpointParser:
     }})"""
 
     def parse_operation(self, endpoint: str, operation: str, metadata: dict, dto_parser: DTOParser):
+        controller_name = metadata.get('tags', ['default'])[0]
         auths = self.parse_summary(metadata.get('summary', ''))
         operation_annotation = f"@{operation.capitalize()}('{self.get_annotation_endpoint(endpoint)}')"
         func_name = metadata.get('operationId', 'funcName')
@@ -169,7 +170,7 @@ class EndpointParser:
     {operation_annotation}
     {signature} {{
         // {func_name}({', '.join(service_signature)}) {{}}
-        return this.myService.{func_name}({', '.join(args)});
+        return this.{controller_name}Service.{func_name}({', '.join(args)});
     }}"""
 
     def parse_endpoint(self, endpoint, metadata):

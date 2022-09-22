@@ -1,5 +1,6 @@
 import json
 import yaml
+import re
 
 from parsers.options import OptionsBuilder
 
@@ -60,8 +61,15 @@ class DTOParser:
 
         return f"\t@ApiProperty({options_builder.options}){ret}\n"
 
+    def camel_to_hyphen(self, input):
+        return re.sub(r'(?<!^)(?=[A-Z])', '-', input).lower()
+
     def parse_DTO(self, DTO, metadata):
-        with open(f'{self.base_folder}/{self.curr_folder}{DTO}.dto.ts', 'w') as f:
+        if DTO == 'IDDto':
+            return
+        dto_file_name = self.camel_to_hyphen(DTO[:-3])
+        
+        with open(f'{self.base_folder}/{self.curr_folder}{dto_file_name}.dto.ts', 'w') as f:
             f.write("import { ApiProperty } from '@nestjs/swagger';\n\n")
             f.write(f"export class {DTO} "+"{\n")
             

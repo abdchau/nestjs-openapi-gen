@@ -27,7 +27,7 @@ class FolderParser:
             dto_files = os.listdir(endpoint_dir)
             dto_files.remove(code_file_name)
             
-            self.parse_dto_files(endpoint_dir, f'{self.controller_dir}/dtos', dto_files)
+            self.parse_dto_files(endpoint_dir, f'{self.controller_dir}/dto', dto_files)
 
             # handle code_file_name
             with open(os.path.join(endpoint_dir, code_file_name)) as f:
@@ -69,7 +69,7 @@ export class {controller_class_name}Controller {{
             f.write("}\n")
 
         controller_folders = os.listdir(self.controller_dir)
-        controller_folders.remove('dtos')
+        controller_folders.remove('dto')
         controller_folders.remove(controller_code_file)
         for folder in controller_folders:
             shutil.rmtree(os.path.join(self.controller_dir, folder))
