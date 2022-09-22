@@ -48,11 +48,18 @@ class FolderParser:
   Delete,
   UseGuards,
 }} from '@nestjs/common';
-import {{ ApiBearerAuth, ApiTags }} from '@nestjs/swagger';
+import {{ ApiQuery, ApiResponse, ApiBearerAuth, ApiTags }} from '@nestjs/swagger';
 
 import {{ Public }} from '../../../auth/decorators/jwt-auth.decorator';
 import {{ Roles }} from '../../../auth/decorators/roles.decorator';
 import {{ Role }} from '../../../auth/role.enum';
+
+import {{ QueryNotRequired }} from '../../../common/decorators/query-not-required.decorator';
+import {{ ApiResponsePaginated }} from '../../../common/responses/api-response-paginated.response';
+import {{ ApiResponseRecords }} from '../../../common/responses/api-response-records.response';
+
+import {{ IDDto }} from '../../../common/dtos/id.dto';
+
 
 @Controller('{controller_name}')
 @ApiTags('{controller_name}')
