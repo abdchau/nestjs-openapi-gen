@@ -12,7 +12,7 @@ OpenAPI specifications can be generated using a visual tool. Many tools exist, b
 # Getting Started
 No dependencies are required.
 
-The CLI assumes existence of a `source` folder in the root directory, which will contain the JSON representation of the OpenAPI specification in `spec.json`. Alternate paths can be specified at run time. YAML representations are also supported, although it is not recommended due to significant performance effect. The yaml file must have a `.yaml` extension.
+The CLI assumes existence of a `source` folder in the root directory, which will contain the JSON representation of the OpenAPI specification in `spec.json`, or the YAML representation in `spec.yaml`. Alternate paths can be specified at run time. The yaml file must have a `.yaml` extension, not `.yml`.
 
 The output code will be contained in the `output` directory at root. Any existing files in the directory will be removed every time the CLI is run. 
 
