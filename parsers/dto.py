@@ -2,7 +2,7 @@ import json
 import yaml
 import re
 
-from parsers.options import OptionsBuilder
+from parsers.helpers import OptionsBuilder
 
 class DTOParser:
     def __init__(self, filename, output_dir, curr_folder='', file_data=None) -> None:
