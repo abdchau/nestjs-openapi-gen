@@ -45,8 +45,8 @@ import {{ Roles }} from '../../../auth/decorators/roles.decorator';
 import {{ Role }} from '../../../auth/role.enum';
 
 import {{ QueryNotRequired }} from '../../../common/decorators/query-not-required.decorator';
-import {{ ApiResponsePaginated }} from '../../../common/responses/api-response-paginated.response';
-import {{ ApiResponseRecords }} from '../../../common/responses/api-response-records.response';
+import {{ ApiPaginatedResponse }} from '../../../common/responses/api-paginated-response.response';
+import {{ ApiRecordsResponse }} from '../../../common/responses/api-records-response.response';
 
 import {{ IDDto }} from '../../../common/dtos/id.dto';
 {DTO_imports_string}

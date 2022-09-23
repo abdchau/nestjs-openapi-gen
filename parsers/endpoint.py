@@ -155,7 +155,7 @@ class EndpointParser:
         for dto_name in DTO_names:
             type_string += f"\n\t\ttype: {dto_name},"
 
-        return f"""@ApiResponse({{
+        return f"""@Api{metadata.get('description', '').capitalize()}Response({{
         status: {response_code},{type_string}
     }})"""
 
@@ -178,14 +178,20 @@ class EndpointParser:
 
         query_not_required_string = '' if len(query_not_required) == 0 else f"\n\t@QueryNotRequired([{', '.join(query_not_required)}])"
 
-        return f"""
+
+        controller_stub = f"""
     {auths}
     {response_string}{query_not_required_string}
     {operation_annotation}
     {signature} {{
         return this.{controller_name}Service.{func_name}({', '.join(args)});
-    }}""", f"""
+    }}"""
+
+        service_stub = f"""
     {func_name}({', '.join(service_signature)}) {{}}\n"""
+
+
+        return controller_stub, service_stub
 
     def parse_endpoint(self, endpoint, metadata):
         self.curr_folder = endpoint.replace('/', '\\')+'/'
