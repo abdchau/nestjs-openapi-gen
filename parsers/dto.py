@@ -68,9 +68,9 @@ class DTOParser:
 """
 
         if child_DTO_name != '':
-            self.parse_file_DTO(child_DTO_name)
+            DTOParser(self.filename, self.base_folder, self.curr_folder, self.file_data).parse_file_DTO(child_DTO_name)
 
-        return f"\t@ApiProperty({options_builder.options}){ret}\n"
+        return f"  @ApiProperty({ options_builder.options }){ret}\n"
 
     def parse_DTO(self, DTO, metadata):
         if DTO == 'IDDto':

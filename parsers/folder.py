@@ -35,6 +35,7 @@ class FolderParser:
   Param,
   Delete,
   UseGuards,
+  Query,
 }} from '@nestjs/common';
 import {{ ApiQuery, ApiResponse, ApiBearerAuth, ApiTags }} from '@nestjs/swagger';
 
@@ -56,7 +57,7 @@ import {{ IDDto }} from '../../../common/dtos/id.dto';
 export class {controller_class_name}Controller {{
     constructor(private {controller_name}Service: {controller_name.capitalize()}Service) {{}}""")
             f.write(controller_code)
-            f.write("}\n")
+            f.write("\n}\n")
         
 
 
@@ -85,7 +86,7 @@ import {{
 
 @Injectable()
 export class {service_class_name}Service {{
-    constructor(private prismaService: PrismaService) {{}}\n""")
+    constructor(private prisma: PrismaService) {{}}\n""")
             f.write(service_code)
             f.write("}\n")
 

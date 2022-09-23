@@ -173,11 +173,14 @@ class EndpointParser:
             service_signature.append(f"{args[i]}: {arg_types[i]}")
 
         response_string = ''
-        for response_code in metadata['responses']:
+        for response_code in metadata.get('responses', []):
             response_string += self.parse_response(response_code, metadata['responses'][response_code], dto_parser)
 
         query_not_required_string = '' if len(query_not_required) == 0 else f"\n\t@QueryNotRequired([{', '.join(query_not_required)}])"
 
+        for i in range(len(args)):
+            if arg_types[i] == 'number':
+                args[i] = '+'+args[i]
 
         controller_stub = f"""
     {auths}
@@ -188,7 +191,7 @@ class EndpointParser:
     }}"""
 
         service_stub = f"""
-    {func_name}({', '.join(service_signature)}) {{}}\n"""
+    async {func_name}({', '.join(service_signature)}): Promise<void> {{}}\n"""
 
 
         return controller_stub, service_stub
