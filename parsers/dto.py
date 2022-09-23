@@ -1,7 +1,7 @@
 import json
 import yaml
 
-from parsers.helpers import OptionsBuilder, camel_to_hyphen
+from parsers.helpers import OptionsBuilder, camel_to_hyphen, DTO_import_builder
 
 class DTOParser:
     def __init__(self, filename, output_dir, curr_folder='', file_data=None) -> None:
@@ -9,6 +9,7 @@ class DTOParser:
         self.base_folder = output_dir
         self.curr_folder = curr_folder
         self.file_data = file_data
+        self.child_DTO_names = []
 
         if self.file_data == None:
             if 'yaml' in self.filename:
@@ -37,6 +38,7 @@ class DTOParser:
 
         if metadata.get('$ref', None) != None:
             child_DTO_name = self.get_DTO_name(metadata['$ref'])
+            self.child_DTO_names.append(child_DTO_name)
             ret = f"""
     {property}: {child_DTO_name};
 """
@@ -52,6 +54,7 @@ class DTOParser:
             options_builder.add_option("isArray", "true")
             if metadata['items'].get('$ref', None) != None:
                 child_DTO_name = self.get_DTO_name(metadata['items']['$ref'])
+                self.child_DTO_names.append(child_DTO_name)
                 options_builder.add_option("type",  child_DTO_name)
                 ret = f"""
     {property}: {child_DTO_name}[];
@@ -74,19 +77,22 @@ class DTOParser:
             return
         dto_file_name = camel_to_hyphen(DTO[:-3])
         
-        with open(f'{self.base_folder}/{self.curr_folder}{dto_file_name}.dto.ts', 'w') as f:
-            f.write("import { ApiProperty } from '@nestjs/swagger';\n\n")
-            f.write(f"export class {DTO} "+"{\n")
-            
-            if metadata['type'] == 'object':
-                if 'properties' in metadata.keys():
+        properties_string = ''
+        if metadata['type'] == 'object':
+            if 'properties' in metadata.keys():
                     for property in metadata.get('required', []):
                         metadata['properties'][property]['required'] = True
                     for property in metadata['properties']:
-                        f.write(self.parse_property(property, metadata['properties'][property]))
-            else:
-                print('TYPE OF DTO IS NOT "object"')
-            
+                        properties_string += self.parse_property(property, metadata['properties'][property])
+        else:
+            print(DTO, 'TYPE OF DTO IS NOT "object"')
+
+        DTO_imports_string = '\n'.join([DTO_import_builder(DTO_name, same_dir=True) for DTO_name in self.child_DTO_names])
+        with open(f'{self.base_folder}/{self.curr_folder}{dto_file_name}.dto.ts', 'w') as f:
+            f.write("import { ApiProperty } from '@nestjs/swagger';\n")
+            f.write(DTO_imports_string)
+            f.write(f"\n\nexport class {DTO} "+"{\n")
+            f.write(properties_string)
             f.write("}\n")
 
 
