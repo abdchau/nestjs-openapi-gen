@@ -178,9 +178,9 @@ class EndpointParser:
     {response_string}{query_not_required_string}
     {operation_annotation}
     {signature} {{
-        // {func_name}({', '.join(service_signature)}) {{}}
         return this.{controller_name}Service.{func_name}({', '.join(args)});
-    }}"""
+    }}""", f"""
+    {func_name}({', '.join(service_signature)}) {{}}\n"""
 
     def parse_endpoint(self, endpoint, metadata):
         self.curr_folder = endpoint.replace('/', '\\')+'/'
@@ -189,8 +189,11 @@ class EndpointParser:
 
         dto_parser = DTOParser(self.filename, self.base_folder, self.curr_folder, file_data=self.file_data)
         for operation in metadata.keys():
+            controller_stub, service_stub = self.parse_operation(endpoint, operation, metadata[operation], dto_parser)
             with open(f'{endpoint_dir}name.controller.ts', 'a') as f:
-                f.write(self.parse_operation(endpoint, operation, metadata[operation], dto_parser))
+                f.write(controller_stub)
+            with open(f'{endpoint_dir}name.service.ts', 'a') as f:
+                f.write(service_stub)
 
 
     def parse_file_endpoint(self, endpoint_name=''):
