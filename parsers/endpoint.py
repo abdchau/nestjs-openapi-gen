@@ -5,10 +5,19 @@ import os
 from parsers.dto import DTOParser
 
 class EndpointParser:
-    def __init__(self, filename, output_dir) -> None:
+    def __init__(self, filename, output_dir, file_data=None) -> None:
         self.filename = filename
         self.base_folder = output_dir
         self.curr_folder = self.base_folder
+        self.file_data = file_data
+
+        if self.file_data == None:
+            if 'yaml' in self.filename:
+                with open(self.filename, 'r') as f:
+                    self.file_data = yaml.safe_load(f)
+            else:
+                with open(self.filename, 'r') as f:
+                    self.file_data = json.load(f)
 
     # def get_default_pipe_string(self, parameter):
     #     default_pipe_string = ''
@@ -178,25 +187,19 @@ class EndpointParser:
         endpoint_dir = f'{self.base_folder}/{self.curr_folder}'
         os.makedirs(endpoint_dir, exist_ok=True)
 
-        dto_parser = DTOParser(self.filename, self.base_folder, self.curr_folder)
+        dto_parser = DTOParser(self.filename, self.base_folder, self.curr_folder, file_data=self.file_data)
         for operation in metadata.keys():
             with open(f'{endpoint_dir}name.controller.ts', 'a') as f:
                 f.write(self.parse_operation(endpoint, operation, metadata[operation], dto_parser))
 
 
     def parse_file_endpoint(self, endpoint_name=''):
-        if 'yaml' in self.filename:
-            with open(self.filename, 'r') as f:
-                file_data = yaml.safe_load(f)
-        else:
-            with open(self.filename, 'r') as f:
-                file_data = json.load(f)
-
         if endpoint_name == '':
-            for endpoint in file_data['paths']:
-                self.parse_endpoint(endpoint, file_data['paths'][endpoint])
+            for endpoint in self.file_data['paths']:
+                self.parse_endpoint(endpoint, self.file_data['paths'][endpoint])
         else:
-            self.parse_endpoint(endpoint_name, file_data['paths'][endpoint_name])
+            self.parse_endpoint(endpoint_name, self.file_data['paths'][endpoint_name])
+
 
 if __name__=='__main__':
     EndpointParser('./source/endpoint.json', './output').parse_file_endpoint('')

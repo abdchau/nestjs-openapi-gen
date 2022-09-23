@@ -6,11 +6,19 @@ from parsers.endpoint import EndpointParser
 from parsers.folder import FolderParser
 
 class ControllerParser:
-    def __init__(self, filename, output_dir) -> None:
+    def __init__(self, filename, output_dir, file_data=None) -> None:
         self.filename = filename
         self.base_folder = output_dir
         self.curr_folder = self.base_folder
+        self.file_data = file_data
 
+        if self.file_data == None:
+            if 'yaml' in self.filename:
+                with open(self.filename, 'r') as f:
+                    self.file_data = yaml.safe_load(f)
+            else:
+                with open(self.filename, 'r') as f:
+                    self.file_data = json.load(f)
 
     def parse_controller(self, controller, controller_endpoints):
         self.curr_folder = controller
@@ -18,7 +26,7 @@ class ControllerParser:
         controller_dir = f'{self.base_folder}/{self.curr_folder}'
         os.makedirs(controller_dir, exist_ok=True)
 
-        endpoint_parser = EndpointParser(self.filename, controller_dir)
+        endpoint_parser = EndpointParser(self.filename, controller_dir, file_data=self.file_data)
 
         for endpoint in controller_endpoints:
             endpoint_parser.parse_file_endpoint(endpoint)
@@ -45,17 +53,11 @@ class ControllerParser:
         return tags
 
     def parse_file_controller(self, controller_name):
-        if 'yaml' in self.filename:
-            with open(self.filename, 'r') as f:
-                file_data = yaml.safe_load(f)
-        else:
-            with open(self.filename, 'r') as f:
-                file_data = json.load(f)
 
         if controller_name == '':
-            for controller in self.get_all_tags(file_data):
-                self.parse_controller(controller, self.get_controller_metadata(controller, file_data))
+            for controller in self.get_all_tags(self.file_data):
+                self.parse_controller(controller, self.get_controller_metadata(controller, self.file_data))
                 FolderParser(f'{self.base_folder}/{self.curr_folder}').parse_folder()
         else:
-            self.parse_controller(controller_name, self.get_controller_metadata(controller_name, file_data))
+            self.parse_controller(controller_name, self.get_controller_metadata(controller_name, self.file_data))
             FolderParser(f'{self.base_folder}/{self.curr_folder}').parse_folder()

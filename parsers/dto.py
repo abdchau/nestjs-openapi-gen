@@ -5,10 +5,19 @@ import re
 from parsers.options import OptionsBuilder
 
 class DTOParser:
-    def __init__(self, filename, output_dir, curr_folder='') -> None:
+    def __init__(self, filename, output_dir, curr_folder='', file_data=None) -> None:
         self.filename = filename
         self.base_folder = output_dir
         self.curr_folder = curr_folder
+        self.file_data = file_data
+
+        if self.file_data == None:
+            if 'yaml' in self.filename:
+                with open(self.filename, 'r') as f:
+                    self.file_data = yaml.safe_load(f)
+            else:
+                with open(self.filename, 'r') as f:
+                    self.file_data = json.load(f)
 
     def get_DTO_name(self, s: str):
         return s.split('/')[-1]
@@ -86,18 +95,11 @@ class DTOParser:
 
 
     def parse_file_DTO(self, DTO_name):
-        if 'yaml' in self.filename:
-            with open(self.filename, 'r') as f:
-                file_data = yaml.safe_load(f)
-        else:
-            with open(self.filename, 'r') as f:
-                file_data = json.load(f)
-
         if DTO_name == '':
-            for DTO in file_data['components']['schemas']:
-                self.parse_DTO(DTO, file_data['components']['schemas'][DTO])
+            for DTO in self.file_data['components']['schemas']:
+                self.parse_DTO(DTO, self.file_data['components']['schemas'][DTO])
         else:
-            self.parse_DTO(DTO_name, file_data['components']['schemas'][DTO_name])
+            self.parse_DTO(DTO_name, self.file_data['components']['schemas'][DTO_name])
 
 
 if __name__=='__main__':
