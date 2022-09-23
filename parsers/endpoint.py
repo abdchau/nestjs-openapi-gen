@@ -10,6 +10,7 @@ class EndpointParser:
         self.base_folder = output_dir
         self.curr_folder = self.base_folder
         self.file_data = file_data
+        self.DTO_names = []
 
         if self.file_data == None:
             if 'yaml' in self.filename:
@@ -48,6 +49,7 @@ class EndpointParser:
     def parse_req_body(self, request_body: dict, dto_parser: DTOParser):
         request_body = request_body['content']['application/json']['schema']
         DTO_name: str = dto_parser.get_DTO_name(request_body['$ref'])
+        self.DTO_names.append(DTO_name)
         dto_parser.parse_file_DTO(DTO_name)
 
         arg_name = f"{DTO_name[0].lower()}{DTO_name[1:]}"
@@ -128,16 +130,19 @@ class EndpointParser:
             if response_object['items'].get('$ref', None) == None:
                 return DTO_names
             DTO_name: str = dto_parser.get_DTO_name(response_object['items']['$ref'])
+            self.DTO_names.append(DTO_name)
             dto_parser.parse_file_DTO(DTO_name)
             DTO_names.append('['+DTO_name+']')
         elif '$ref' in response_object:
             DTO_name: str = dto_parser.get_DTO_name(response_object['$ref'])
+            self.DTO_names.append(DTO_name)
             dto_parser.parse_file_DTO(DTO_name)
             DTO_names.append(DTO_name)
         else:
             for property in response_object['properties']:
                 if '$ref' in response_object['properties'][property]:
                     DTO_name: str = dto_parser.get_DTO_name(response_object['properties'][property]['$ref'])
+                    self.DTO_names.append(DTO_name)
                     dto_parser.parse_file_DTO(DTO_name)
                     DTO_names.append("Pagination"+DTO_name)
                         
@@ -202,6 +207,8 @@ class EndpointParser:
                 self.parse_endpoint(endpoint, self.file_data['paths'][endpoint])
         else:
             self.parse_endpoint(endpoint_name, self.file_data['paths'][endpoint_name])
+
+        return self.DTO_names
 
 
 if __name__=='__main__':

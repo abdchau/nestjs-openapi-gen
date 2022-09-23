@@ -11,3 +11,6 @@ class OptionsBuilder:
 
 def camel_to_hyphen(input):
     return re.sub(r'(?<!^)(?=[A-Z])', '-', input).lower()
+
+def DTO_import_builder(DTO_name):
+    return f"import {{ {DTO_name} }} from './dto/{camel_to_hyphen(DTO_name[:-3])}.dto';"

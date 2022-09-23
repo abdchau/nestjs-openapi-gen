@@ -1,9 +1,16 @@
 import os
 import shutil
 
+from parsers.helpers import DTO_import_builder
+
 class FolderParser:
-    def __init__(self, controller_dir) -> None:
+    def __init__(self, controller_dir, controller_DTOs) -> None:
         self.controller_dir = controller_dir
+        self.controller_DTOs = list(controller_DTOs)
+        try:
+            self.controller_DTOs.remove('IDDto')
+        except:
+            pass
 
     def parse_dto_files(self, from_dir, to_dir, dto_files):
         if dto_files is None:
@@ -15,7 +22,7 @@ class FolderParser:
             # except Exception as e:
             # print(e)
 
-    def write_controller(self, controller_name, controller_code, controller_code_file):
+    def write_controller(self, controller_name, controller_code, controller_code_file, DTO_imports_string):
         controller_class_name = "".join([token.capitalize() for token in controller_name.split('-')])
 
         with open(os.path.join(self.controller_dir, controller_code_file), 'w') as f:
@@ -42,7 +49,7 @@ import {{ ApiResponsePaginated }} from '../../../common/responses/api-response-p
 import {{ ApiResponseRecords }} from '../../../common/responses/api-response-records.response';
 
 import {{ IDDto }} from '../../../common/dtos/id.dto';
-
+{DTO_imports_string}
 
 @Controller('{controller_name}')
 @ApiTags('{controller_name}')
@@ -62,7 +69,7 @@ export class {controller_class_name}Controller {{
 
 
 
-    def write_service(self, service_name, service_code, service_code_file):
+    def write_service(self, service_name, service_code, service_code_file, DTO_imports_string):
         service_class_name = "".join([token.capitalize() for token in service_name.split('-')])
 
         with open(os.path.join(self.controller_dir, service_code_file), 'w') as f:
@@ -74,6 +81,7 @@ import {{
   unix_timestamp,
 }} from '../../../common/helpers.common';
 
+{DTO_imports_string}
 
 @Injectable()
 export class {service_class_name}Service {{
@@ -81,7 +89,12 @@ export class {service_class_name}Service {{
             f.write(service_code)
             f.write("}\n")
 
+
     def parse_folder(self):
+        # generate DTO imports
+        DTO_imports_string = '\n'.join([DTO_import_builder(DTO_name) for DTO_name in self.controller_DTOs])
+
+        # handle code and DTO files
         controller_code = ""
         service_code = ""
         for endpoint_dir in os.listdir(self.controller_dir):
@@ -107,8 +120,8 @@ export class {service_class_name}Service {{
         controller_code_file = f"{controller_name}.controller.ts"
         service_code_file = f"{controller_name}.service.ts"
 
-        self.write_controller(controller_name, controller_code, controller_code_file)
-        self.write_service(controller_name, service_code, service_code_file)
+        self.write_controller(controller_name, controller_code, controller_code_file, DTO_imports_string)
+        self.write_service(controller_name, service_code, service_code_file, DTO_imports_string)
         
 
         controller_folders = os.listdir(self.controller_dir)

@@ -28,8 +28,12 @@ class ControllerParser:
 
         endpoint_parser = EndpointParser(self.filename, controller_dir, file_data=self.file_data)
 
+        controller_DTOs = set()
         for endpoint in controller_endpoints:
-            endpoint_parser.parse_file_endpoint(endpoint)
+            endpoint_DTOs = set(endpoint_parser.parse_file_endpoint(endpoint))
+            controller_DTOs.update(endpoint_DTOs)
+
+        return controller_DTOs
 
     def get_controller_metadata(self, controller, file_data):
         controller_endpoints = set()
@@ -56,8 +60,8 @@ class ControllerParser:
 
         if controller_name == '':
             for controller in self.get_all_tags(self.file_data):
-                self.parse_controller(controller, self.get_controller_metadata(controller, self.file_data))
-                FolderParser(f'{self.base_folder}/{self.curr_folder}').parse_folder()
+                controller_DTOs = self.parse_controller(controller, self.get_controller_metadata(controller, self.file_data))
+                FolderParser(f'{self.base_folder}/{self.curr_folder}', controller_DTOs).parse_folder()
         else:
-            self.parse_controller(controller_name, self.get_controller_metadata(controller_name, self.file_data))
-            FolderParser(f'{self.base_folder}/{self.curr_folder}').parse_folder()
+            controller_DTOs = self.parse_controller(controller_name, self.get_controller_metadata(controller_name, self.file_data))
+            FolderParser(f'{self.base_folder}/{self.curr_folder}', controller_DTOs).parse_folder()
