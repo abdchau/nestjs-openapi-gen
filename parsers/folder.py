@@ -50,6 +50,8 @@ class FolderParser:
 }} from '@nestjs/common';
 import {{ ApiQuery, ApiResponse, ApiBearerAuth, ApiTags }} from '@nestjs/swagger';
 
+import {{ {controller_name.capitalize()}Service }} from './{controller_name}.service';
+
 import {{ Public }} from '../../../auth/decorators/jwt-auth.decorator';
 import {{ Roles }} from '../../../auth/decorators/roles.decorator';
 import {{ Role }} from '../../../auth/role.enum';
@@ -64,7 +66,7 @@ import {{ IDDto }} from '../../../common/dtos/id.dto';
 @Controller('{controller_name}')
 @ApiTags('{controller_name}')
 export class {controller_class_name}Controller {{
-    constructor() {{}}""")
+    constructor() {{private {controller_name}Service: {controller_name.capitalize()}Service}}""")
             f.write(controller_code)
             f.write("}\n")
 
